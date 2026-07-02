@@ -63,9 +63,12 @@ return {
       },
 
       sources = cmp.config.sources({
+        -- lazydev feeds Lua require()-path completions; group_index = 0 lets it
+        -- take priority and suppresses lua_ls's noisier suggestions in configs.
+        { name = 'lazydev', group_index = 0 },
         { name = 'nvim_lsp' },
         { name = 'luasnip' },
-        {name = 'buffer'},
+        { name = 'buffer' },
         { name = 'path' },
       }),
     }

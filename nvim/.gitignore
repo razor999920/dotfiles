@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Neovim swap/backup/undo files
+*.swp
+*.swo
+*~
+*.bak
+
+# Neovim undo history (if stored locally)
+undodir/
+undo/
+
+# Compiled spell files
+spell/*.add.spl
+spell/*.spl
+
+# Session files
+Session.vim
+.session.vim
+
+# Log files
+*.log
+
+# Local overrides (machine-specific settings not meant for version control)
+lua/**/local.lua
+local.lua

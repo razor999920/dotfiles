@@ -26,6 +26,10 @@ return {
       },
     }
 
+    -- mason-lspconfig v2: `automatic_installation` was removed. Installs come
+    -- from `ensure_installed`; enabling is handled by `automatic_enable`
+    -- (default true) which calls `vim.lsp.enable()` for every installed server
+    -- under its lspconfig name.
     mason_lspconfig.setup {
       -- list of servers for mason to install
       ensure_installed = {
@@ -35,10 +39,8 @@ return {
         'tailwindcss',
         'svelte',
         'lua_ls',
-        'eslint',
         'gopls',
         'pyright',
-        'templ',
         'templ',
       },
     }

@@ -2,7 +2,9 @@ return {
   'nvim-treesitter/nvim-treesitter',
   event = { 'BufReadPre', 'BufNewFile' },
   dependencies = {
-    'windwp/nvim-ts-autotag',
+    -- nvim-ts-autotag is decoupled from treesitter modules now; it needs its
+    -- own setup(). opts = {} makes lazy.nvim call require('nvim-ts-autotag').setup().
+    { 'windwp/nvim-ts-autotag', opts = {} },
     'nvim-treesitter/nvim-treesitter-textobjects',
     -- Add parser for templ
     { 'vrischmann/tree-sitter-templ' },
@@ -16,10 +18,6 @@ return {
         additional_vim_regex_highlighting = false,
       },
       indent = { enable = true },
-      autotag = {
-        enable = true,
-        enable_close_on_slash = true,
-      },
       -- Add languages to be installed here that you want installed for treesitter
       ensure_installed = {
         'c',

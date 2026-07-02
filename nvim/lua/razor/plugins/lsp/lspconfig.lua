@@ -4,20 +4,19 @@ return {
   dependencies = {
     'hrsh7th/cmp-nvim-lsp',
     { 'antosha417/nvim-lsp-file-operations', config = true },
-    { 'folke/neodev.nvim', opts = {} },
+    -- Lua nvim-API/plugin completion is handled by lazydev.nvim (its own spec).
   },
   config = function()
     -- import lspconfig plugin
     local lspconfig = require 'lspconfig'
-
     -- import mason_lspconfig plugin
     local mason_lspconfig = require 'mason-lspconfig'
-
     -- import cmp-nvim-lsp plugin
     local cmp_nvim_lsp = require 'cmp_nvim_lsp'
+    -- used to enable autocompletion (assign to every lsp server config)
+    local capabilities = cmp_nvim_lsp.default_capabilities()
 
     local keymap = vim.keymap -- for conciseness
-
     vim.api.nvim_create_autocmd('LspAttach', {
       group = vim.api.nvim_create_augroup('UserLspConfig', {}),
       callback = function(ev)
@@ -67,9 +66,6 @@ return {
       end,
     })
 
-    -- used to enable autocompletion (assign to every lsp server config)
-    local capabilities = cmp_nvim_lsp.default_capabilities()
-
     -- Change the Diagnostic symbols in the sign column (gutter)
     -- (not in youtube nvim video)
     local signs = { Error = ' ', Warn = ' ', Hint = '󰠠 ', Info = ' ' }
@@ -78,137 +74,149 @@ return {
       vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = '' })
     end
 
-    mason_lspconfig.setup_handlers {
-      -- default handler for installed servers
-      function(server_name)
-        lspconfig[server_name].setup {
-          capabilities = capabilities,
-        }
-      end,
+    -- Lua
+    vim.lsp.config('lua_ls', {
+      capabilities = capabilities,
+      settings = {
+        Lua = {
+          diagnostics = {
+            globals = { 'vim' },
+          },
+          completion = {
+            callSnippet = 'Replace',
+          },
+        },
+      },
+    })
+    vim.lsp.enable 'lua_ls'
 
-      ['emmet_ls'] = function()
-        lspconfig['emmet_ls'].setup {
-          capabilities = capabilities,
-          filetypes = { 'html', 'typescriptreact', 'javascriptreact', 'css', 'sass', 'scss', 'less', 'svelte', 'templ' }, -- Added templ
-        }
-      end,
+    -- Gopls (single source of truth -- go.nvim's own LSP setup is disabled via
+    -- lsp_cfg = false so gopls attaches exactly once)
+    vim.lsp.config('gopls', {
+      capabilities = capabilities,
+      filetypes = { 'go', 'gomod', 'gowork', 'gotmpl' },
+      settings = {
+        gopls = {
+          gofumpt = true,
+          staticcheck = true,
+          usePlaceholders = true,
+          completeUnimported = true,
+          semanticTokens = false,
+          directoryFilters = { '-.git', '-.vscode', '-.idea', '-.vscode-test', '-node_modules' },
+          codelenses = {
+            gc_details = false,
+            generate = true,
+            regenerate_cgo = true,
+            run_govulncheck = true,
+            test = true,
+            tidy = true,
+            upgrade_dependency = true,
+            vendor = true,
+          },
+          analyses = {
+            nilness = true,
+            unusedparams = true,
+            unusedwrite = true,
+            useany = true,
+          },
+        },
+      },
+    })
+    vim.lsp.enable 'gopls'
 
-      ['templ'] = function()
-        lspconfig['templ'].setup {
-          capabilities = capabilities,
-          filetypes = { 'templ' },
-          root_dir = lspconfig.util.root_pattern('go.mod', '.git'),
-          cmd = { 'templ', 'lsp' },
-          settings = {
-            templ = {
-              plugins = {
-                htmx = true,
-              },
-              format = {
-                enabled = true, -- Enable formatting
-                formatter = 'prettier', -- Use prettier for formatting if available
-              },
+    -- HTMX
+    vim.lsp.config('htmx', {
+      capabilities = capabilities,
+      filetypes = { 'html', 'templ' }, -- Enable for both HTML and Templ files
+    })
+    vim.lsp.enable 'htmx'
+
+    -- TEMPL
+    vim.lsp.config('templ', {
+      capabilities = capabilities,
+      filetypes = { 'templ' },
+      root_dir = lspconfig.util.root_pattern('go.mod', '.git'),
+      cmd = { 'templ', 'lsp' },
+      settings = {
+        templ = {
+          plugins = {
+            htmx = true,
+          },
+          format = {
+            enabled = true, -- Enable formatting
+            formatter = 'prettier', -- Use prettier for formatting if available
+          },
+        },
+      },
+    })
+    vim.lsp.enable 'templ'
+
+    -- Typescript (lspconfig config name is `ts_ls`, not the binary name --
+    -- using the binary name produced a bare config with no root markers)
+    vim.lsp.config('ts_ls', {
+      capabilities = capabilities,
+      filetypes = {
+        'javascript',
+        'javascriptreact',
+        'javascript.jsx',
+        'typescript',
+        'typescriptreact',
+        'typescript.tsx',
+      },
+      cmd = { 'typescript-language-server', '--stdio' },
+    })
+    vim.lsp.enable 'ts_ls'
+
+    -- Tailwind
+    vim.lsp.config('tailwindcss', {
+      capabilities = capabilities,
+      filetypes = { 'templ', 'html', 'javascript', 'typescript', 'react', 'typescriptreact' },
+      settings = {
+        tailwindCSS = {
+          includeLanguages = {
+            templ = 'html',
+          },
+          experimental = {
+            classRegex = {
+              -- Support for HTMX class detection
+              'class="([^"]*)"',
+              "class='([^']*)'",
             },
           },
-        }
-      end,
+        },
+      },
+    })
+    vim.lsp.enable 'tailwindcss'
 
-      -- Add gopls configuration for better Go integration
-      ['gopls'] = function()
-        lspconfig['gopls'].setup {
-          capabilities = capabilities,
-          filetypes = { 'go', 'gomod', 'gowork', 'gotmpl', 'templ' }, -- Added templ
-          settings = {
-            gopls = {
-              analyses = {
-                unusedparams = true,
-              },
-              staticcheck = true,
-              gofumpt = true,
-              templateExtensions = { 'templ' }, -- Enable templ extension support
+    -- Docker Compose (lspconfig config name is `docker_compose_language_service`)
+    vim.lsp.config('docker_compose_language_service', {
+      capabilities = capabilities,
+      filetypes = { 'yaml.docker-compose' },
+      settings = {
+        telemetry = {
+          enabled = false,
+        },
+      },
+    })
+    vim.lsp.enable 'docker_compose_language_service'
+
+    -- Docker
+    vim.lsp.config('dockerls', {
+      capabilities = capabilities,
+      filetypes = { 'dockerfile' },
+      settings = {
+        docker = {
+          languageserver = {
+            diagnostics = {
+              enable = true,
+            },
+            formatter = {
+              enable = true,
             },
           },
-        }
-      end,
-
-      ['htmx'] = function()
-        lspconfig['htmx'].setup {
-          capabilities = capabilities,
-          filetypes = { 'html', 'templ' }, -- Enable for both HTML and Templ files
-        }
-      end,
-
-      ['tailwindcss'] = function()
-        lspconfig['tailwindcss'].setup {
-          capabilities = capabilities,
-          filetypes = { 'templ', 'html', 'javascript', 'typescript', 'react' },
-          settings = {
-            tailwindCSS = {
-              includeLanguages = {
-                templ = 'html',
-              },
-              experimental = {
-                classRegex = {
-                  -- Support for HTMX class detection
-                  'class="([^"]*)"',
-                  "class='([^']*)'",
-                },
-              },
-            },
-          },
-        }
-      end,
-
-      -- Docker Compose Language Service
-      ['docker_compose_language_service'] = function()
-        lspconfig['docker_compose_language_service'].setup {
-          capabilities = capabilities,
-          filetypes = { 'yaml.docker-compose' },
-          settings = {
-            telemetry = {
-              enabled = false,
-            },
-          },
-        }
-      end,
-
-      -- Docker Language Server
-      ['dockerls'] = function()
-        lspconfig['dockerls'].setup {
-          capabilities = capabilities,
-          filetypes = { 'dockerfile' },
-          settings = {
-            docker = {
-              languageserver = {
-                diagnostics = {
-                  enable = true,
-                },
-                formatter = {
-                  enable = true,
-                },
-              },
-            },
-          },
-        }
-      end,
-
-      ['lua_ls'] = function()
-        -- configure lua server (with special settings)
-        lspconfig['lua_ls'].setup {
-          capabilities = capabilities,
-          settings = {
-            Lua = {
-              -- make the language server recognize "vim" global
-              diagnostics = {
-                globals = { 'vim' },
-              },
-              completion = {
-                callSnippet = 'Replace',
-              },
-            },
-          },
-        }
-      end,
-    }
+        },
+      },
+    })
+    vim.lsp.enable 'dockerls'
   end,
 }

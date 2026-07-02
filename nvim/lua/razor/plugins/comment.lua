@@ -5,9 +5,15 @@ return {
     'JoosepAlviste/nvim-ts-context-commentstring',
   },
   config = function()
+    -- Disable the plugin's legacy CursorHold autocmd (it crashes on buffers
+    -- with no treesitter parser). We drive commentstring on-demand via the
+    -- Comment.nvim pre_hook below instead.
+    vim.g.skip_ts_context_commentstring_module = true
+
     -- import comment plugin safely
     local comment = require 'Comment'
 
+    require('ts_context_commentstring').setup { enable_autocmd = false }
     local ts_context_commentstring = require 'ts_context_commentstring.integrations.comment_nvim'
 
     -- enable comment

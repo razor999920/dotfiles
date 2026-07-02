@@ -50,8 +50,9 @@ keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic 
 keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
--- Neotree
-keymap.set('n', '<leader>t', ':Neotree toggle<CR>')
+-- File explorer is oil.nvim: press `-` to open the parent directory as an
+-- editable buffer (see plugins/oil.lua). No <leader>t map here -- it would
+-- shadow the <leader>t{o,x,n,p,f} tab maps above with a which-key timeout.
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`

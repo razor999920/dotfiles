@@ -1,12 +1,37 @@
-theme = catppuccin-mocha
-# theme = GruvboxDarkHard
-font-family = CaskaydiaCove Nerd Font
-font-size = 16
-cursor-style = block
-adjust-cell-height = 20%
+
+# Font settings
+font-family = "JetBrainsMono Nerd Font Mono"
+#font-family="MonoLisa Variable
+font-size = 14
+font-style = "medium"
+bold-is-bright = true
+font-thicken = true
+
+# Color theme
+#theme = "catppuccin-mocha"
+#theme = GruvboxDarkHard
+#theme = miasma
+theme = srcery
+
+# Cursor settings
+cursor-color = 412234
+cursor-invert-fg-bg = true
+
+
 background-opacity = 0.96
-mouse-scroll-multiplier = 2
+# mouse-scroll-multiplier = 2
 macos-titlebar-style = hidden
+
+# Window settings
+window-padding-x = 5
 window-padding-balance = true
+window-vsync = true
 window-save-state = always
 window-colorspace = "display-p3"
+
+# Other settings
+adjust-underline-position = 8
+adjust-underline-thickness = 2
+adjust-cell-height = 10%
+auto-update-channel = "tip"
+mouse-hide-while-typing = true

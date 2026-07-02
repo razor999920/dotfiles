@@ -5,7 +5,6 @@ format = """
 $directory\
 [](fg:#DA627D bg:#FCA17D)\
 $git_branch\
-$git_status\
 [](fg:#FCA17D bg:#86BBD8)\
 $elixir\
 $golang\
@@ -67,10 +66,6 @@ format = '[ $symbol ]($style)'
 symbol = ""
 style = "bg:#FCA17D"
 format = '[ $symbol $branch ]($style)'
-
-[git_status]
-style = "bg:#FCA17D"
-format = '[$all_status$ahead_behind ]($style)'
 
 [golang]
 symbol = " "
