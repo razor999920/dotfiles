@@ -57,12 +57,8 @@ opt.breakindent = true
 -- Save undo history
 opt.undofile = true
 
--- Case-insensitive searching UNLESS \C or capital in search
-opt.ignorecase = true
-opt.smartcase = true
-
--- Keep signcolumn on by default
-vim.wo.signcolumn = 'yes'
+-- CHANGED: removed duplicate ignorecase/smartcase (already set under "search settings" above)
+-- CHANGED: removed duplicate `vim.wo.signcolumn = 'yes'` (already set as opt.signcolumn under "appearance")
 
 -- Decrease update time
 opt.updatetime = 250
@@ -71,5 +67,4 @@ opt.timeoutlen = 300
 -- Set completeopt to have a better completion experience
 opt.completeopt = 'menuone,noselect'
 
--- NOTE: You should make sure your terminal supports this
-opt.termguicolors = true
+-- CHANGED: removed duplicate termguicolors (already set under "appearance" above)

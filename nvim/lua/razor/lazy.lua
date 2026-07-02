@@ -15,8 +15,8 @@ vim.opt.rtp:prepend(lazypath)
 
 -- [[ Configure plugins ]]
 --  You can configure plugins using the `config` key.
-require('lazy').setup({{import = "razor.plugins"}, {import = "razor.plugins.lsp"}}, {
-  ckecker = {
+require('lazy').setup({ { import = 'razor.plugins' }, { import = 'razor.plugins.lsp' } }, {
+  checker = { -- CHANGED: was 'ckecker' (typo); lazy silently ignored it, so the update checker never ran
     enabled = true,
     notify = false,
   },
