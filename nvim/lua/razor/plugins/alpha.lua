@@ -126,15 +126,17 @@ return {
       return b
     end
 
+    -- CHANGED: trimmed the dashboard to the actions actually used at startup.
+    -- Removed 'New file' (you open existing files) and 'Mason' (opened rarely,
+    -- not from the greeter). Added 'Cheatsheet' showing its real <leader>ch map.
     dashboard.section.buttons.val = {
-      button('e', '', 'New file', '<cmd>ene<CR>'),
       button('f', '', 'Find file', '<cmd>Telescope find_files<CR>'),
       button('r', '', 'Recent files', '<cmd>Telescope oldfiles<CR>'),
       button('w', '', 'Find word', '<cmd>Telescope live_grep<CR>'),
       button('-', '', 'File explorer', '<cmd>Oil<CR>'),
+      button('SPC ch', '', 'Cheatsheet', '<cmd>Cheatsheet<CR>'),
       button('c', '', 'Config', '<cmd>Telescope find_files cwd=' .. vim.fn.stdpath 'config' .. '<CR>'),
       button('l', '󰒲', 'Plugins (Lazy)', '<cmd>Lazy<CR>'),
-      button('m', '', 'Mason', '<cmd>Mason<CR>'),
       button('q', '', 'Quit', '<cmd>qa<CR>'),
     }
 
