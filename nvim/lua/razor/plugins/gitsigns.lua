@@ -23,8 +23,8 @@ return {
         gs.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
       end, 'Reset hunk')
 
-      map('n', '<leader>hS', gs.stage_buffer, 'Stage buffer')
-      map('n', '<leader>hR', gs.reset_buffer, 'Reset buffer')
+      map('n', '<leader>ha', gs.stage_buffer, 'Stage buffer')
+      map('n', '<leader>hx', gs.reset_buffer, 'Reset buffer')
 
       map('n', '<leader>hu', gs.undo_stage_hunk, 'Undo stage hunk')
 
@@ -33,10 +33,10 @@ return {
       map('n', '<leader>hb', function()
         gs.blame_line { full = true }
       end, 'Blame line')
-      map('n', '<leader>hB', gs.toggle_current_line_blame, 'Toggle line blame')
+      map('n', '<leader>ht', gs.toggle_current_line_blame, 'Toggle line blame')
 
       map('n', '<leader>hd', gs.diffthis, 'Diff this')
-      map('n', '<leader>hD', function()
+      map('n', '<leader>hc', function()
         gs.diffthis '~'
       end, 'Diff this ~')
 
