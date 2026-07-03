@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>razor · dev cheatsheet</title>
+<style>
+  :root{
+    --base:#1e1e2e; --mantle:#181825; --crust:#11111b;
+    --s0:#313244; --s1:#45475a; --s2:#585b70;
+    --text:#cdd6f4; --sub:#a6adc8; --muted:#7f849c;
+    --blue:#89b4fa; --lav:#b4befe; --mauve:#cba6f7; --green:#a6e3a1;
+    --peach:#fab387; --red:#f38ba8; --yellow:#f9e2af; --teal:#94e2d5; --sky:#89dceb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--base); color:var(--text);
+    font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding-bottom:60px;
+  }
+  header{
+    position:sticky; top:0; z-index:10;
+    background:linear-gradient(180deg,var(--crust),var(--mantle));
+    border-bottom:1px solid var(--s0);
+    padding:16px 20px 12px;
+  }
+  .title{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .title h1{margin:0;font-size:20px;letter-spacing:.3px}
+  .title h1 .accent{color:var(--mauve)}
+  .title .hint{color:var(--muted);font-size:12.5px}
+  .searchrow{display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap}
+  #q{
+    flex:1; min-width:220px; background:var(--base); color:var(--text);
+    border:1px solid var(--s1); border-radius:10px; padding:10px 14px; font-size:15px; outline:none;
+  }
+  #q:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(137,180,250,.25)}
+  #count{color:var(--muted);font-size:12.5px;white-space:nowrap}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+  .chip{
+    cursor:pointer;user-select:none;border:1px solid var(--s1);background:var(--mantle);
+    color:var(--sub);border-radius:999px;padding:4px 11px;font-size:12.5px;transition:.12s;
+  }
+  .chip:hover{border-color:var(--s2);color:var(--text)}
+  .chip.active{background:var(--mauve);border-color:var(--mauve);color:var(--crust);font-weight:600}
+  main{padding:18px 20px 0;max-width:1180px;margin:0 auto}
+  .note{
+    background:rgba(250,179,135,.09);border:1px solid rgba(250,179,135,.35);
+    border-radius:10px;padding:11px 14px;margin:0 0 18px;color:var(--peach);font-size:13px;
+  }
+  .note b{color:var(--yellow)}
+  section{margin:0 0 26px;scroll-margin-top:150px}
+  .sec-h{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+  .sec-h .dot{width:9px;height:9px;border-radius:50%}
+  .sec-h h2{margin:0;font-size:15.5px;letter-spacing:.3px}
+  .sec-h .c{color:var(--muted);font-size:12px}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+    gap:7px 16px;
+  }
+  .row{
+    display:flex;align-items:flex-start;gap:12px;padding:7px 10px;border-radius:8px;
+    border:1px solid transparent;
+  }
+  .row:hover{background:var(--mantle);border-color:var(--s0)}
+  .keys{flex:0 0 auto;min-width:118px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  kbd{
+    background:var(--s0);border:1px solid var(--s2);border-bottom-width:2px;border-radius:6px;
+    padding:1px 7px;font:12.5px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    color:var(--text);white-space:nowrap;
+  }
+  .plus{color:var(--muted);font-size:11px}
+  .desc{flex:1;color:var(--sub);font-size:13.5px;padding-top:2px}
+  .mode{
+    flex:0 0 auto;font:11px/1.6 ui-monospace,monospace;color:var(--crust);
+    background:var(--s2);border-radius:5px;padding:0 6px;margin-top:2px;
+  }
+  .mode.n{background:var(--blue)} .mode.i{background:var(--green)}
+  .mode.v{background:var(--peach)} .mode.x{background:var(--peach)}
+  .mode.o{background:var(--teal)} .mode.c{background:var(--sky)}
+  .mode.t{background:var(--mauve)} .mode.tmux{background:var(--red)}
+  .warn{color:var(--red)!important}
+  .row.warn-row{background:rgba(243,139,168,.07);border-color:rgba(243,139,168,.3)}
+  .empty{color:var(--muted);text-align:center;padding:60px 0;font-size:15px;display:none}
+  footer{color:var(--muted);font-size:12px;text-align:center;padding:24px 20px 0}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  mark{background:var(--yellow);color:var(--crust);border-radius:3px;padding:0 1px}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <h1><span class="accent">razor</span> · dev cheatsheet</h1>
+    <span class="hint">nvim keymaps · tmux · vim shortcuts — type to filter, <kbd>/</kbd> to focus search, <kbd>Esc</kbd> to clear</span>
+  </div>
+  <div class="searchrow">
+    <input id="q" type="text" placeholder="Search keys or actions… (e.g. rename, hunk, split, pane)" autocomplete="off" />
+    <span id="count"></span>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+<main>
+  <div class="note">
+    <b>Heads-up on tmux:</b> your personal <code>~/.tmux.conf</code> wasn't readable when this was generated, so the tmux
+    <em>prefix</em> and any custom binds below are <b>defaults</b> (prefix shown as <kbd>C-b</kbd>). If you remapped the prefix
+    (commonly <kbd>C-a</kbd>), substitute yours. The plugin binds (resurrect, continuum, tmux-navigator) are accurate.
+  </div>
+  <div id="sections"></div>
+  <div class="empty" id="empty">No matches. Try a shorter term.</div>
+</main>
+
+<footer>
+  Generated for razor · nvim config <code>~/.config/nvim</code> · open in nvim with <kbd>:Cheatsheet</kbd> or <kbd>&lt;leader&gt;ch</kbd>
+  <div class="legend">
+    <span><span class="mode n">n</span>normal</span>
+    <span><span class="mode i">i</span>insert</span>
+    <span><span class="mode v">v</span>visual</span>
+    <span><span class="mode o">o</span>operator</span>
+    <span><span class="mode c">c</span>cmdline</span>
+    <span><span class="mode t">t</span>terminal</span>
+    <span><span class="mode tmux">tmux</span>tmux</span>
+  </div>
+</footer>
+
+<script>
+/* ---- data: [keys, desc, mode, warn?] grouped by category ---- */
+const DATA = [
+  ["Vim · Motions", "blue", [
+    ["h j k l","Left / down / up / right","n"],
+    ["w  b  e","Next word start / back word / end of word","n"],
+    ["W  B  E","Same, but WORD (whitespace-delimited)","n"],
+    ["0  ^  $","Line start / first non-blank / line end","n"],
+    ["gg  G","Top of file / bottom of file","n"],
+    ["{n}G","Jump to line n (e.g. 42G)","n"],
+    ["{  }","Previous / next paragraph","n"],
+    ["C-u  C-d","Scroll half page up / down","n"],
+    ["C-b  C-f","Scroll full page up / down","n"],
+    ["H  M  L","Top / middle / bottom of screen","n"],
+    ["%","Jump to matching bracket","n"],
+    ["f{c}  F{c}","Find char forward / backward on line","n"],
+    ["t{c}  T{c}","Till (before) char forward / backward","n"],
+    [";  ,","Repeat / reverse last f t F T","n"],
+    ["*  #","Search word under cursor forward / backward","n"],
+    ["`` ","Jump back to position before last jump","n"],
+    ["C-o  C-i","Older / newer position in jumplist","n"],
+  ]],
+  ["Vim · Editing", "green", [
+    ["i  a","Insert before cursor / append after","n"],
+    ["I  A","Insert at line start / append at line end","n"],
+    ["o  O","Open new line below / above","n"],
+    ["x  X","Delete char under / before cursor","n"],
+    ["r{c}  R","Replace one char / replace mode","n"],
+    ["dd  yy","Delete line / yank line","n"],
+    ["p  P","Paste after / before cursor","n"],
+    ["dw  cw","Delete / change word","n"],
+    ["D  C","Delete / change to end of line","n"],
+    [">>  <<","Indent / outdent line","n"],
+    ["J","Join line below into current","n"],
+    ["gU{m}  gu{m}","Uppercase / lowercase over motion","n"],
+    ["~","Toggle case of char","n"],
+    ["u  C-r","Undo / redo","n"],
+    [".","Repeat last change","n"],
+  ]],
+  ["Vim · Operators + Text Objects", "teal", [
+    ["d c y {motion}","Delete / change / yank over a motion","o"],
+    ["iw  aw","Inner word / a word (with surrounding space)","o"],
+    ['i"  a"','Inside / around quotes','o'],
+    ["ip  ap","Inner / a paragraph","o"],
+    ["i(  i{  i[","Inside brackets / braces / squares","o"],
+    ['ci"  ci(','Change inside quotes / parens','o'],
+    ["di{  ya(","Delete inside braces / yank around parens","o"],
+    ["ih","Select git hunk (via gitsigns)","o"],
+  ]],
+  ["Vim · Visual", "peach", [
+    ["v  V  C-v","Visual char / line / block","n"],
+    ["o","Move to other end of selection","v"],
+    ["gv","Reselect last visual selection","n"],
+    [">  <","Indent / outdent selection","v"],
+    ["y  d  c","Yank / delete / change selection","v"],
+    ["u  U","Lowercase / uppercase selection","v"],
+  ]],
+  ["Vim · Search, Replace & Registers", "yellow", [
+    ["/{pat}  ?{pat}","Search forward / backward","n"],
+    ["n  N","Next / previous match","n"],
+    [":%s/old/new/g","Replace all in file","c"],
+    [":s/old/new/g","Replace all in current line","c"],
+    ['"{r}y  "{r}p',"Yank to / paste from register r","n"],
+    ["q{r} … q","Record macro to register r (q to stop)","n"],
+    ["@{r}  @@","Play macro r / replay last macro","n"],
+    ["ma  `a","Set mark a / jump to mark a","n"],
+    ["za  zR  zM","Toggle fold / open all / close all","n"],
+  ]],
+  ["Nvim · General (your keymaps)", "lav", [
+    ["jk","Exit insert mode (instead of Esc)","i"],
+    ["<leader>nh","Clear search highlights","n"],
+    ["<leader>+  <leader>-","Increment / decrement number under cursor","n"],
+    ["j  k","Move by display line when wrapped (gj/gk)","n"],
+    ["K","Show hover documentation (LSP)","n"],
+  ]],
+  ["Nvim · Windows, Splits & Tabs", "blue", [
+    ["<leader>sv","Split window vertically","n"],
+    ["<leader>sh","Split horizontally — ⚠ overridden by Telescope 'Search Help'","n",true],
+    ["<leader>se","Make splits equal size","n"],
+    ["<leader>sx","Close current split","n"],
+    ["C-h C-j C-k C-l","Move between splits & tmux panes (tmux-navigator)","n"],
+    ["<leader>to","Open new tab","n"],
+    ["<leader>tx","Close current tab","n"],
+    ["<leader>tn  <leader>tp","Next / previous tab","n"],
+    ["<leader>tf","Open current buffer in a new tab","n"],
+  ]],
+  ["Nvim · LSP (on attach)", "mauve", [
+    ["gd","Go to definition (Telescope)","n"],
+    ["gD","Go to declaration","n"],
+    ["gr","Show references (Telescope)","n"],
+    ["gI","Go to implementation (Telescope)","n"],
+    ["gt","Go to type definition (Telescope)","n"],
+    ["K","Hover documentation","n"],
+    ["<leader>ca","Code action (works on visual selection too)","n"],
+    ["<leader>rn","Smart rename symbol","n"],
+    ["<leader>rs","Restart LSP","n"],
+    ["<leader>D","Buffer diagnostics (Telescope)","n"],
+    ["<leader>d","Line diagnostics (float)","n"],
+    ["[d  ]d","Previous / next diagnostic","n"],
+    ["<leader>e","Open floating diagnostic","n"],
+    ["<leader>q","Diagnostics to location list","n"],
+  ]],
+  ["Nvim · Telescope (find & search)", "sky", [
+    ["<leader>sf","Search files (find_files)","n"],
+    ["<leader>sg","Search by grep (live_grep)","n"],
+    ["<leader>sG","Live grep on git root","n"],
+    ["<leader>sw","Search current word under cursor","n"],
+    ["<leader>sh","Search help tags","n"],
+    ["<leader>sd","Search diagnostics","n"],
+    ["<leader>sr","Resume last picker","n"],
+    ["<leader>ss","Select a Telescope builtin","n"],
+    ["<leader>st","Search TODOs","n"],
+    ["<leader>gf","Search git files","n"],
+    ["<leader>?","Find recently opened files","n"],
+    ["<leader><space>","Find existing buffers","n"],
+    ["<leader>/","Fuzzy search in current buffer","n"],
+    ["<leader>s/","Live grep in open files","n"],
+  ]],
+  ["Nvim · Git (gitsigns + lazygit)", "green", [
+    ["<leader>lg","Open LazyGit","n"],
+    ["<leader>hs","Stage hunk (also works on visual range)","n"],
+    ["<leader>hr","Reset hunk (also works on visual range)","n"],
+    ["<leader>hS","Stage entire buffer","n"],
+    ["<leader>hR","Reset entire buffer","n"],
+    ["<leader>hu","Undo stage hunk","n"],
+    ["<leader>hp","Preview hunk","n"],
+    ["<leader>hb","Blame current line (full)","n"],
+    ["<leader>hB","Toggle inline line blame","n"],
+    ["<leader>hd","Diff this","n"],
+    ["<leader>hD","Diff this against ~","n"],
+    ["ih","Text object: select hunk (in d/c/y or visual)","o"],
+  ]],
+  ["Nvim · Flash (jump)", "peach", [
+    ["s","Flash jump to any location","n"],
+    ["S","Flash Treesitter (select nodes)","n"],
+    ["r","Remote Flash (operator-pending)","o"],
+    ["R","Treesitter search","o"],
+    ["C-s","Toggle Flash while in search","c"],
+  ]],
+  ["Nvim · Oil (file explorer)", "yellow", [
+    ["-","Open parent directory as editable buffer","n"],
+    ["<CR>","Open file / enter directory","n"],
+    ["C-s","Open under cursor in vertical split","n"],
+    ["C-h","Open under cursor in horizontal split","n"],
+    ["C-t","Open under cursor in new tab","n"],
+    ["C-p","Preview under cursor","n"],
+    ["C-l","Refresh listing","n"],
+    ["C-c","Close oil","n"],
+    ["_","Open current working directory","n"],
+    ["`  ~","cd to dir / cd (tab scope)","n"],
+    ["gs","Change sort order","n"],
+    ["gx","Open in external program","n"],
+    ["g.","Toggle hidden files","n"],
+    ["g\\","Toggle trash view","n"],
+    ["g?","Show oil help","n"],
+  ]],
+  ["Nvim · Trouble & TODOs", "red", [
+    ["<leader>xx","Diagnostics (Trouble)","n"],
+    ["<leader>xX","Buffer diagnostics (Trouble)","n"],
+    ["<leader>xs","Symbols (Trouble)","n"],
+    ["<leader>xl","LSP definitions / references (Trouble)","n"],
+    ["<leader>xL","Location list (Trouble)","n"],
+    ["<leader>xq","Quickfix list (Trouble)","n"],
+    ["<leader>xt","TODOs (Trouble)","n"],
+    ["]t  [t","Next / previous TODO comment","n"],
+  ]],
+  ["Nvim · Terminal (toggleterm)", "mauve", [
+    ["C-t","Toggle floating terminal","n"],
+    ["C-t","Toggle terminal (also closes it from inside)","t"],
+    ["C-\\ C-n","Exit terminal mode to normal mode","t"],
+  ]],
+  ["Tmux · Navigation (tmux-navigator)", "teal", [
+    ["C-h C-j C-k C-l","Move between panes AND vim splits seamlessly","tmux"],
+    ["C-\\","Move to previously active pane / split","tmux"],
+  ]],
+  ["Tmux · Sessions (resurrect + continuum)", "blue", [
+    ["prefix C-s","Save tmux environment (resurrect)","tmux"],
+    ["prefix C-r","Restore saved environment (resurrect)","tmux"],
+    ["(automatic)","Continuum auto-saves & restores on start — no keybind","tmux"],
+  ]],
+  ["Tmux · Plugins (tpm)", "lav", [
+    ["prefix I","Install plugins listed in tmux.conf","tmux"],
+    ["prefix U","Update plugins","tmux"],
+    ["prefix Alt-u","Remove/uninstall plugins not on the list","tmux"],
+  ]],
+  ["Tmux · Windows & Panes (defaults)", "peach", [
+    ["prefix c","Create new window","tmux"],
+    ["prefix ,","Rename current window","tmux"],
+    ["prefix n  prefix p","Next / previous window","tmux"],
+    ["prefix 0-9","Jump to window by number","tmux"],
+    ["prefix w","Choose window from list","tmux"],
+    ['prefix %',"Split pane vertically","tmux"],
+    ['prefix "',"Split pane horizontally","tmux"],
+    ["prefix o","Cycle through panes","tmux"],
+    ["prefix z","Zoom / unzoom current pane","tmux"],
+    ["prefix x","Kill current pane","tmux"],
+    ["prefix {  prefix }","Swap pane left / right","tmux"],
+    ["prefix Space","Cycle pane layouts","tmux"],
+    ["prefix d","Detach from session","tmux"],
+    ["prefix [","Enter copy/scroll mode (q to exit)","tmux"],
+    ["prefix ]","Paste buffer","tmux"],
+    ["prefix :","Command prompt","tmux"],
+    ["prefix ?","List all key bindings","tmux"],
+    ["prefix t","Show clock","tmux"],
+  ]],
+];
+
+const MODE_ABBR = {n:"n",i:"i",v:"v",x:"x",o:"o",c:"c",t:"t",tmux:"tmux"};
+const sectionsEl = document.getElementById("sections");
+const chipsEl = document.getElementById("chips");
+const q = document.getElementById("q");
+const countEl = document.getElementById("count");
+const emptyEl = document.getElementById("empty");
+let activeCat = "all";
+
+function keyHtml(keys){
+  // split on spaces but keep <leader>, C-x, multi-char tokens; render each token as kbd, join runs
+  return keys.split(/\s+/).map(tok =>
+    `<kbd>${tok.replace(/&/g,"&amp;").replace(/</g,"&lt;")}</kbd>`
+  ).join('<span class="plus"> </span>');
+}
+
+// Build chips
+const cats = ["all", ...DATA.map(d=>d[0])];
+cats.forEach(c=>{
+  const el = document.createElement("div");
+  el.className = "chip" + (c==="all"?" active":"");
+  el.textContent = c==="all" ? "All" : c.replace(/^(Vim|Nvim|Tmux) · /,"");
+  el.dataset.cat = c;
+  el.title = c;
+  el.onclick = ()=>{ activeCat = c; [...chipsEl.children].forEach(x=>x.classList.toggle("active", x.dataset.cat===c)); render(); };
+  chipsEl.appendChild(el);
+});
+
+// Build sections
+DATA.forEach(([title,color,rows])=>{
+  const sec = document.createElement("section");
+  sec.dataset.cat = title;
+  sec.innerHTML = `<div class="sec-h"><span class="dot" style="background:var(--${color})"></span>
+    <h2>${title}</h2><span class="c">${rows.length}</span></div>`;
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  rows.forEach(([keys,desc,mode,warn])=>{
+    const row = document.createElement("div");
+    row.className = "row" + (warn?" warn-row":"");
+    row.dataset.text = (keys+" "+desc).toLowerCase();
+    row.innerHTML =
+      `<div class="keys">${keyHtml(keys)}</div>`+
+      `<div class="desc${warn?' warn':''}">${desc.replace(/</g,"&lt;")}</div>`+
+      `<div class="mode ${mode}">${MODE_ABBR[mode]||mode}</div>`;
+    grid.appendChild(row);
+  });
+  sec.appendChild(grid);
+  sectionsEl.appendChild(sec);
+});
+
+function render(){
+  const term = q.value.trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll("section").forEach(sec=>{
+    const catOk = activeCat==="all" || sec.dataset.cat===activeCat;
+    let secShown = 0;
+    sec.querySelectorAll(".row").forEach(row=>{
+      const match = catOk && (term==="" || row.dataset.text.includes(term));
+      row.style.display = match ? "" : "none";
+      if(match){ secShown++; shown++; }
+    });
+    sec.style.display = secShown ? "" : "none";
+    const c = sec.querySelector(".c"); if(c) c.textContent = secShown;
+  });
+  countEl.textContent = shown + " shortcut" + (shown===1?"":"s");
+  emptyEl.style.display = shown ? "none" : "block";
+}
+
+q.addEventListener("input", render);
+document.addEventListener("keydown", e=>{
+  if(e.key==="/" && document.activeElement!==q){ e.preventDefault(); q.focus(); }
+  else if(e.key==="Escape"){ q.value=""; q.blur(); render(); }
+});
+render();
+</script>
+</body>
+</html>

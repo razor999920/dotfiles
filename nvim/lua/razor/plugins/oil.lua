@@ -211,5 +211,11 @@ return {
         border = 'rounded',
       },
     }
+
+    -- ADDED: <leader>tt = "tree" -> open Oil in the current file's directory.
+    -- Two-key map on purpose so it never clashes with the <leader>t{o,x,n,p,f}
+    -- tab maps (bare <leader>t stays unmapped, avoiding the which-key timeout).
+    -- (You can still hit `-` anywhere to jump to the parent directory.)
+    vim.keymap.set('n', '<leader>tt', '<cmd>Oil<CR>', { desc = 'Open Oil (file tree)' })
   end,
 }
